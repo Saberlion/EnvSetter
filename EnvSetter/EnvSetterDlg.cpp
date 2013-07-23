@@ -6,6 +6,9 @@
 #include "EnvSetter.h"
 #include "EnvSetterDlg.h"
 #include "afxdialogex.h"
+#include <cstdlib>
+#include <iostream>
+using namespace std;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -63,6 +66,8 @@ BEGIN_MESSAGE_MAP(CEnvSetterDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BUTTON1, &CEnvSetterDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BACKUPCURENV, &CEnvSetterDlg::OnBnClickedBackupcurenv)
 END_MESSAGE_MAP()
 
 
@@ -151,3 +156,43 @@ HCURSOR CEnvSetterDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+
+
+void CEnvSetterDlg::OnBnClickedButton1()
+{
+	char szPath[MAX_PATH];     //存放选择的目录路径
+	CString str;
+
+	ZeroMemory(szPath, sizeof(szPath));  
+
+	BROWSEINFO bi;  
+	bi.hwndOwner = this->GetSafeHwnd();  
+	bi.pidlRoot = NULL;  
+	bi.pszDisplayName = szPath;  
+	bi.lpszTitle = "请选择保存目录：";  
+	bi.ulFlags = 0;  
+	bi.lpfn = NULL;  
+	bi.lParam = 0;  
+	bi.iImage = 0;  
+	//弹出选择目录对话框
+	LPITEMIDLIST lp = SHBrowseForFolder(&bi);  
+
+	if(lp && SHGetPathFromIDList(lp, szPath))  
+	{
+		
+	}
+}
+
+
+void CEnvSetterDlg::OnBnClickedBackupcurenv()
+{
+	const char * path = getenv("PATH");
+	CStdioFile wFile;
+	wFile.Open("C:\\Users\\Arthur\\Desktop\\1.txt",CFile::modeCreate|CFile::modeWrite);
+	if (path)
+	{
+		wFile.WriteString(path);
+	}
+}
