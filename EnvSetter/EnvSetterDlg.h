@@ -30,7 +30,10 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
+	BOOL CEnvSetterDlg::AddEnv(LPCTSTR szName,LPCTSTR szPath);
 	afx_msg void OnBnClickedBackupcurenv();
 	afx_msg void OnBnClickedRestoreenv();
 	afx_msg void OnBnClickedSetjavaenv();
+	CString GetEnv(LPCTSTR name);
+	BOOL SetEnv(LPCTSTR name, LPCTSTR value);
 };

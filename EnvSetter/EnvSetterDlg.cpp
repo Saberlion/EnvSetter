@@ -160,8 +160,7 @@ HCURSOR CEnvSetterDlg::OnQueryDragIcon()
 
 void CEnvSetterDlg::OnBnClickedBackupcurenv()
 {
-	const char * path = getenv("PATH");
-	AfxMessageBox(path);
+	CString path=GetEnv("path");
 	CString   strFilename=_T("");   
 	char  szFileters[]="save files (*.txt)|*.txt|ALL files (*.*)|*.*||";   
 	CFileDialog  savedlg (FALSE,"txt","*.txt",OFN_OVERWRITEPROMPT,szFileters,this);   
@@ -182,7 +181,7 @@ void CEnvSetterDlg::OnBnClickedBackupcurenv()
 void CEnvSetterDlg::OnBnClickedRestoreenv()
 {
 	CString   strFilename=_T("");   
-	char  szFileters[]="open files (*.txt)|*.mp3|ALL files (*.*)|*.*||";   
+	char  szFileters[]="open files (*.txt)|*.txt|ALL files (*.*)|*.*||";   
 	CFileDialog  opendlg (TRUE,"txt","*.txt",OFN_OVERWRITEPROMPT,szFileters,this);   
 	if (opendlg.DoModal()==IDOK)
 	{   
@@ -193,8 +192,7 @@ void CEnvSetterDlg::OnBnClickedRestoreenv()
 	rFile.Open(strFilename,CFile::modeRead);
 	rFile.ReadString(strPath);
 	AfxMessageBox(strPath);
-	strPath =  strPath;
-	if (_putenv_s("Path",strPath))
+	if (SetEnv("Path",strPath))
 	{
 		AfxMessageBox("successful");
 	}
@@ -233,14 +231,83 @@ void CEnvSetterDlg::OnBnClickedSetjavaenv()
 		BOOL bWorking = finder.FindFile(strJavaPath);
 		if(bWorking)
 		{
-			CString strPath = getenv("PATH");
-			strPath = "PATH=" + strPath + ";" + (CString)szPath + "\\bin" + ";" + (CString)szPath + "\\jre\\bin";
-			CString strClasspath;
-			strClasspath = "CLASSPATH=.;" + (CString)szPath + "\\lib\\dt.jar;" + (CString)szPath + "\\lib\\tools.jar";
-			AfxMessageBox(strPath);
-			AfxMessageBox(strClasspath);
-			putenv(strClasspath);
-			putenv(strPath);
+			CString strPath = (CString)szPath + "\\bin";
+			AddEnv("Path",strPath);
+			strPath = (CString)szPath + "\\jre\\bin";
+			AddEnv("Path",strPath);
+			CString strClasspath = (CString)szPath + "\\lib\\dt.jar;" + (CString)szPath + "\\lib\\tools.jar";
+			SetEnv("classpath",strClasspath);
 		}
 	}
+}
+
+
+BOOL CEnvSetterDlg::AddEnv(LPCTSTR szName,LPCTSTR szPath)
+{
+	CString strKey = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
+
+	HKEY hKey;
+	RegOpenKeyEx(HKEY_LOCAL_MACHINE, strKey, 0L, KEY_ALL_ACCESS, &hKey);
+
+	DWORD dwType = 0, dw = 0;
+	RegQueryValueEx(hKey, _T(szName), NULL, &dwType, NULL, &dw);
+
+	CString sPath;
+	LPTSTR lpsz = sPath.GetBufferSetLength(dw);
+	RegQueryValueEx(hKey, _T(szName), NULL, &dwType, (BYTE*)lpsz, &dw);
+	sPath.ReleaseBuffer();
+
+	sPath = CString(szPath) + _T(";") + sPath;
+	RegSetValueEx(hKey, _T(szName), NULL, REG_EXPAND_SZ,
+		(BYTE * const)(LPCSTR)sPath, (sPath.GetLength()+1)*sizeof(TCHAR));
+
+	RegCloseKey(hKey);
+
+	DWORD dwRet;
+	SendMessageTimeout(HWND_BROADCAST,WM_SETTINGCHANGE,0,
+		(LPARAM)"Environment", SMTO_ABORTIFHUNG, 5000,&dwRet);
+
+	return TRUE;
+}
+
+
+
+
+CString CEnvSetterDlg::GetEnv(LPCTSTR name)
+{
+	CString strKey = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
+
+	HKEY hKey;
+	RegOpenKeyEx(HKEY_LOCAL_MACHINE, strKey, 0L, KEY_ALL_ACCESS, &hKey);
+
+	DWORD dwType = 0, dw = 0;
+	RegQueryValueEx(hKey, _T(name), NULL, &dwType, NULL, &dw);
+
+	CString sPath;
+	LPTSTR lpsz = sPath.GetBufferSetLength(dw);
+	RegQueryValueEx(hKey, _T(name), NULL, &dwType, (BYTE*)lpsz, &dw);
+	sPath.ReleaseBuffer();
+	AfxMessageBox(sPath);
+	return sPath;
+}
+
+
+BOOL CEnvSetterDlg::SetEnv(LPCTSTR name, LPCTSTR value)
+{
+	CString strKey = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
+
+	HKEY hKey;
+	RegOpenKeyEx(HKEY_LOCAL_MACHINE, strKey, 0L, KEY_ALL_ACCESS, &hKey);
+
+	CString sPath;
+	sPath = CString(value) + _T(";") ;
+	RegSetValueEx(hKey, _T(name), NULL, REG_EXPAND_SZ,
+		(BYTE * const)(LPCSTR)sPath, (sPath.GetLength()+1)*sizeof(TCHAR));
+
+	RegCloseKey(hKey);
+
+	DWORD dwRet;
+	SendMessageTimeout(HWND_BROADCAST,WM_SETTINGCHANGE,0,
+		(LPARAM)"Environment", SMTO_ABORTIFHUNG, 5000,&dwRet);
+	return TRUE;
 }
