@@ -30,6 +30,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedBackupcurenv();
+	afx_msg void OnBnClickedRestoreenv();
+	afx_msg void OnBnClickedSetjavaenv();
 };

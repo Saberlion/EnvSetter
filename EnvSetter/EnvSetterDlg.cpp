@@ -66,8 +66,9 @@ BEGIN_MESSAGE_MAP(CEnvSetterDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTON1, &CEnvSetterDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BACKUPCURENV, &CEnvSetterDlg::OnBnClickedBackupcurenv)
+	ON_BN_CLICKED(IDC_RESTOREENV, &CEnvSetterDlg::OnBnClickedRestoreenv)
+	ON_BN_CLICKED(IDC_SETJAVAENV, &CEnvSetterDlg::OnBnClickedSetjavaenv)
 END_MESSAGE_MAP()
 
 
@@ -157,10 +158,55 @@ HCURSOR CEnvSetterDlg::OnQueryDragIcon()
 }
 
 
+void CEnvSetterDlg::OnBnClickedBackupcurenv()
+{
+	const char * path = getenv("PATH");
+	AfxMessageBox(path);
+	CString   strFilename=_T("");   
+	char  szFileters[]="save files (*.txt)|*.txt|ALL files (*.*)|*.*||";   
+	CFileDialog  savedlg (FALSE,"txt","*.txt",OFN_OVERWRITEPROMPT,szFileters,this);   
+	if (savedlg.DoModal()==IDOK)
+	{   
+		strFilename=savedlg.GetPathName();
+		CStdioFile wFile;
+		wFile.Open(strFilename,CFile::modeCreate|CFile::modeWrite);
+		if (path)
+		{
+			wFile.WriteString(path);
+		}
+		wFile.Close();
+	}
+}
 
 
+void CEnvSetterDlg::OnBnClickedRestoreenv()
+{
+	CString   strFilename=_T("");   
+	char  szFileters[]="open files (*.txt)|*.mp3|ALL files (*.*)|*.*||";   
+	CFileDialog  opendlg (TRUE,"txt","*.txt",OFN_OVERWRITEPROMPT,szFileters,this);   
+	if (opendlg.DoModal()==IDOK)
+	{   
+		strFilename=opendlg.GetPathName();   
+	}
+	CStdioFile rFile;
+	CString strPath;
+	rFile.Open(strFilename,CFile::modeRead);
+	rFile.ReadString(strPath);
+	AfxMessageBox(strPath);
+	strPath =  strPath;
+	if (_putenv_s("Path",strPath))
+	{
+		AfxMessageBox("successful");
+	}
+	else
+	{
+		AfxMessageBox("failure");
+	}
+	
+}
 
-void CEnvSetterDlg::OnBnClickedButton1()
+
+void CEnvSetterDlg::OnBnClickedSetjavaenv()
 {
 	char szPath[MAX_PATH];     //存放选择的目录路径
 	CString str;
@@ -171,7 +217,7 @@ void CEnvSetterDlg::OnBnClickedButton1()
 	bi.hwndOwner = this->GetSafeHwnd();  
 	bi.pidlRoot = NULL;  
 	bi.pszDisplayName = szPath;  
-	bi.lpszTitle = "请选择保存目录：";  
+	bi.lpszTitle = "请选择JAVA安装目录：";  
 	bi.ulFlags = 0;  
 	bi.lpfn = NULL;  
 	bi.lParam = 0;  
@@ -181,18 +227,20 @@ void CEnvSetterDlg::OnBnClickedButton1()
 
 	if(lp && SHGetPathFromIDList(lp, szPath))  
 	{
-		
-	}
-}
-
-
-void CEnvSetterDlg::OnBnClickedBackupcurenv()
-{
-	const char * path = getenv("PATH");
-	CStdioFile wFile;
-	wFile.Open("C:\\Users\\Arthur\\Desktop\\1.txt",CFile::modeCreate|CFile::modeWrite);
-	if (path)
-	{
-		wFile.WriteString(path);
+		CFileFind finder;
+		CString strJavaPath;
+		strJavaPath = (CString)szPath + "\\bin\\java.exe";
+		BOOL bWorking = finder.FindFile(strJavaPath);
+		if(bWorking)
+		{
+			CString strPath = getenv("PATH");
+			strPath = "PATH=" + strPath + ";" + (CString)szPath + "\\bin" + ";" + (CString)szPath + "\\jre\\bin";
+			CString strClasspath;
+			strClasspath = "CLASSPATH=.;" + (CString)szPath + "\\lib\\dt.jar;" + (CString)szPath + "\\lib\\tools.jar";
+			AfxMessageBox(strPath);
+			AfxMessageBox(strClasspath);
+			putenv(strClasspath);
+			putenv(strPath);
+		}
 	}
 }
