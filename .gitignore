@@ -31,3 +31,4 @@ $tf*/
 *.opensdf
 #ignore thumbnails created by windows
 #Ignore files build by Visual Studio
+[Ii]pch*/

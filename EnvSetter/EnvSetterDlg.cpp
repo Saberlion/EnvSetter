@@ -174,6 +174,7 @@ void CEnvSetterDlg::OnBnClickedBackupcurenv()
 			wFile.WriteString(path);
 		}
 		wFile.Close();
+		AfxMessageBox("备份环境变量成功");
 	}
 }
 
@@ -194,11 +195,11 @@ void CEnvSetterDlg::OnBnClickedRestoreenv()
 	AfxMessageBox(strPath);
 	if (SetEnv("Path",strPath))
 	{
-		AfxMessageBox("successful");
+		AfxMessageBox("还原环境变量成功");
 	}
 	else
 	{
-		AfxMessageBox("failure");
+		AfxMessageBox("还原环境变量失败");
 	}
 	
 }
@@ -237,6 +238,11 @@ void CEnvSetterDlg::OnBnClickedSetjavaenv()
 			AddEnv("Path",strPath);
 			CString strClasspath = (CString)szPath + "\\lib\\dt.jar;" + (CString)szPath + "\\lib\\tools.jar";
 			SetEnv("classpath",strClasspath);
+			AfxMessageBox("环境变量设置完成");
+		}
+		else 
+		{
+			AfxMessageBox("目录选择错误，请重新选择！");
 		}
 	}
 }
