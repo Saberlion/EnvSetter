@@ -188,19 +188,23 @@ void CEnvSetterDlg::OnBnClickedRestoreenv()
 	{   
 		strFilename=opendlg.GetPathName();   
 	}
-	CStdioFile rFile;
-	CString strPath;
-	rFile.Open(strFilename,CFile::modeRead);
-	rFile.ReadString(strPath);
-	AfxMessageBox(strPath);
-	if (SetEnv("Path",strPath))
+	if (!strFilename.IsEmpty())
 	{
-		AfxMessageBox("还原环境变量成功");
+		CStdioFile rFile;
+		CString strPath;
+		rFile.Open(strFilename,CFile::modeRead);
+		rFile.ReadString(strPath);
+		AfxMessageBox(strPath);
+		if (SetEnv("Path",strPath))
+		{
+			AfxMessageBox("还原环境变量成功");
+		}
+		else
+		{
+			AfxMessageBox("还原环境变量失败");
+		}
 	}
-	else
-	{
-		AfxMessageBox("还原环境变量失败");
-	}
+	
 	
 }
 
