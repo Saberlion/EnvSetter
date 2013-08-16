@@ -218,10 +218,10 @@ void CEnvSetterDlg::OnBnClickedSetjavaenv()
 
 	BROWSEINFO bi;  
 	bi.hwndOwner = this->GetSafeHwnd();  
-	bi.pidlRoot = NULL;  
+	bi.pidlRoot = ParsePidlFromPath(NULL);  
 	bi.pszDisplayName = szPath;  
 	bi.lpszTitle = "请选择JAVA安装目录：";  
-	bi.ulFlags = 0;  
+	bi.ulFlags = BIF_RETURNONLYFSDIRS ;  
 	bi.lpfn = NULL;  
 	bi.lParam = 0;  
 	bi.iImage = 0;  
@@ -320,4 +320,20 @@ BOOL CEnvSetterDlg::SetEnv(LPCTSTR name, LPCTSTR value)
 	SendMessageTimeout(HWND_BROADCAST,WM_SETTINGCHANGE,0,
 		(LPARAM)"Environment", SMTO_ABORTIFHUNG, 5000,&dwRet);
 	return TRUE;
+}
+
+LPITEMIDLIST CEnvSetterDlg::ParsePidlFromPath(LPCSTR lpszPath)
+{    
+	OLECHAR olePath[MAX_PATH];    
+	LPSHELLFOLDER pDesktopFolder;
+	LPITEMIDLIST pidl;    
+	ULONG ulEaten, ulAttribs;    
+	HRESULT hres;    
+	SHGetDesktopFolder(&pDesktopFolder);    
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, lpszPath, -1, olePath, sizeof(olePath));    
+	hres = pDesktopFolder->ParseDisplayName(NULL, NULL, olePath, &ulEaten, &pidl, &ulAttribs);    
+	hres = pDesktopFolder->Release();        
+	if(FAILED(hres))
+		return NULL;
+	return pidl;
 }

@@ -36,4 +36,5 @@ public:
 	afx_msg void OnBnClickedSetjavaenv();
 	CString GetEnv(LPCTSTR name);
 	BOOL SetEnv(LPCTSTR name, LPCTSTR value);
+	LPITEMIDLIST ParsePidlFromPath(LPCSTR lpszPath);
 };
